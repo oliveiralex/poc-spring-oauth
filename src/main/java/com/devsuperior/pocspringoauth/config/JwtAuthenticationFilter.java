@@ -49,6 +49,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			username = jwtService.extractUsername(token);
 		}
 
+		/*
+		 * Check if user is stored in database and then update
+		 * SecurityContextHolder
+		 */
 		if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 			User user = userService.loadUserByUsername(username);
 
