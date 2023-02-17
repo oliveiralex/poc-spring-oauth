@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.devsuperior.pocspringoauth.entities.User;
@@ -22,7 +23,7 @@ public class JwtService {
 
 	@Value("${jwt.secret}")
 	private String jwtSecret;
-	
+
 	@Value("${jwt.duration}")
 	private Integer jwtDuration;
 
@@ -49,12 +50,22 @@ public class JwtService {
 	}
 
 	public String generateToken(Map<String, Object> claims, User user) {
-		return Jwts
-				.builder()
-				.setClaims(claims)
-				.setSubject(user.getUsername())
+		return Jwts.builder().setClaims(claims).setSubject(user.getUsername())
 				.setIssuedAt(new Date(System.currentTimeMillis()))
 				.setExpiration(new Date(System.currentTimeMillis() + jwtDuration))
 				.signWith(getSignInKey(), SignatureAlgorithm.HS256).compact();
+	}
+
+	public boolean isTokenValid(String token, User user) {
+		String username = extractUsername(token);
+		return (username.equals(user.getUsername())) && !isTokenExpired(token);
+	}
+
+	private boolean isTokenExpired(String token) {
+		return extractExpiration(token).before(new Date());
+	}
+
+	private Date extractExpiration(String token) {
+		return extractClaim(token, Claims::getExpiration);
 	}
 }
