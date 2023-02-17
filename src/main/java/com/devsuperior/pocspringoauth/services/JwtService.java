@@ -1,6 +1,7 @@
 package com.devsuperior.pocspringoauth.services;
 
 import java.security.Key;
+import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -12,12 +13,17 @@ import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtService {
-	
+
 	@Value("${jwt.secret}")
 	private String jwtSecret;
 
 	public String extractUsername(String token) {
-		return null;
+		return extractClaim(token, Claims::getSubject);
+	}
+
+	public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+		final Claims claims = extractAllClaims(token);
+		return claimsResolver.apply(claims);
 	}
 
 	private Claims extractAllClaims(String token) {
